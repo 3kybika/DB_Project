@@ -49,7 +49,7 @@ RUN apt-get install -y openjdk-9-jdk-headless
 RUN apt-get install -y maven
 
 # Копируем исходный код в Docker-контейнер
-ENV WORK /opt/DB_API_Project
+ENV WORK /opt/DB_Project
 ADD db-project/ $WORK/db-project/
 
 # Собираем и устанавливаем пакет
