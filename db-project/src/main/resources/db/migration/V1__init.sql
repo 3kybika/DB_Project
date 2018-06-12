@@ -69,9 +69,9 @@ CREATE TABLE votes (
 );
 --ToDo условие уникальности можно ли пропустить?
 CREATE TABLE IF NOT EXISTS forums_users (
-	user_id INTEGER REFERENCES users(id) ON DELETE CASCADE NOT NULL,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE NOT NULL,
   forum_id INTEGER REFERENCES forums(id) ON DELETE CASCADE NOT NULL,
-	CONSTRAINT user_forum UNIQUE (user_id, forum_id)
+  CONSTRAINT user_forum UNIQUE (user_id, forum_id)
 );
 
 DROP INDEX IF EXISTS  forums_users_of_user_id_idx;
