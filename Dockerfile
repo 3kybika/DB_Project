@@ -1,6 +1,6 @@
 FROM ubuntu:16.04
 
-MAINTAINER Elena Oshkina
+MAINTAINER _Vlad_
 
 # Обвновление списка пакетов
 RUN apt-get -y update
