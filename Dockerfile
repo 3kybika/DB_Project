@@ -5,8 +5,9 @@ MAINTAINER Vladislav Alehin
 # Обвновление списка пакетов
 RUN apt-get -y update
 
+#
 # Установка postgresql
-
+#
 ENV PGVER 9.5
 RUN apt-get install -y postgresql-$PGVER
 
@@ -26,10 +27,7 @@ RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/$PGVER/main/pg_hba
 
 # And add ``listen_addresses`` to ``/etc/postgresql/$PGVER/main/postgresql.conf``
 RUN echo "listen_addresses='*'" >> /etc/postgresql/$PGVER/main/postgresql.conf
-
 RUN echo "synchronous_commit = off" >> /etc/postgresql/$PGVER/main/postgresql.conf
-RUN echo "fsync = off" >> /etc/postgresql/$PGVER/main/postgresql.conf
-
 
 # Expose the PostgreSQL port
 EXPOSE 5432
@@ -64,4 +62,4 @@ EXPOSE 5000
 #
 # Запускаем PostgreSQL и сервер
 #
-CMD service postgresql start && java -Xmx300M -Xmx300M -jar $WORK/db-project/target/dbproject-1.0-SNAPSHOT.jar
+CMD service postgresql start && java -Xmx300M -Xmx300M -jar $WORK/db-project/target/demo-0.0.1-SNAPSHOT.jar
