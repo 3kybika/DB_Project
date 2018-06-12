@@ -1,6 +1,6 @@
 FROM ubuntu:16.04
 
-MAINTAINER _Vlad_
+MAINTAINER Vladislav Alehin
 
 # Обвновление списка пакетов
 RUN apt-get -y update
