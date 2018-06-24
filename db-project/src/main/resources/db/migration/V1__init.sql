@@ -9,9 +9,6 @@ CREATE TABLE users (
   about       citext
 );
 
-DROP INDEX IF EXISTS  users_id_to_nickname_idx;
-CREATE INDEX IF NOT EXISTS users_id_to_nickname_idx ON users (id, nickname DESC);
-
 DROP TABLE IF EXISTS forums;
 CREATE TABLE forums (
   id          SERIAL    NOT NULL PRIMARY KEY,
@@ -53,11 +50,6 @@ CREATE TABLE posts (
   root_post   INTEGER
 );
 
-DROP INDEX IF EXISTS  posts_of_root_post_path_idx;
-CREATE INDEX posts_of_root_post_path_idx ON posts(root_post, path);
-DROP INDEX IF EXISTS  posts_of_thread_parent_id_idx;
-CREATE INDEX posts_of_thread_parent_id_idx ON posts(thread_id, parent, id);
-
 DROP TABLE IF EXISTS votes;
 CREATE TABLE votes (
   user_id     INTEGER   REFERENCES users,
@@ -67,36 +59,75 @@ CREATE TABLE votes (
 
   UNIQUE (user_id, thread_id)
 );
---ToDo условие уникальности можно ли пропустить?
+
 CREATE TABLE IF NOT EXISTS forums_users (
-  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE NOT NULL,
-  forum_id INTEGER REFERENCES forums(id) ON DELETE CASCADE NOT NULL,
-  CONSTRAINT user_forum UNIQUE (user_id, forum_id)
+  user_id     INTEGER,
+  email       citext,
+  fullname    citext,
+  nickname    citext,
+  about       citext,
+  forum_id INTEGER,
+  UNIQUE (forum_id, user_id)
 );
 
-DROP INDEX IF EXISTS  forums_users_of_user_id_idx;
-CREATE INDEX IF NOT EXISTS forums_users_of_user_id_idx ON forums_users(user_id);
-DROP INDEX IF EXISTS  forums_users_of_forum_id_idx;
-CREATE INDEX IF NOT EXISTS forums_users_of_forum_id_idx ON forums_users(forum_id);
+--- Для обновления авторов из тредов
 /*
--- На обновление
-CREATE OR REPLACE FUNCTION updateVotes() RETURNS TRIGGER AS
-$update_votes_trigger$
-	BEGIN
-		IF (NEW.vote!=OLD.vote)
-		THEN
-			IF (NEW.vote>0)
-			THEN
-			  UPDATE threads SET votes=votes+2 WHERE id=NEW.thread_id;
-			ELSE
-			  UPDATE threads SET votes=votes-2 WHERE id=NEW.thread_id;
-			END IF;
-		END IF;
-		RETURN NEW;
-	END;
-$vote_update_trig$
-LANGUAGE plpgsql;
+CREATE OR REPLACE FUNCTION adding_authors_From_justcreated_thread_proc()
+  RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  INSERT INTO forums_users(user_id, nickname, fullname, email, about, forum_id)
+    (SELECT
+       new.author_id,
+       u.nickname,
+       u.fullname,
+       u.email,
+       u.about,
+       new.forum_id
+     FROM users u
+     WHERE u.id = new.author_id)
+  ON CONFLICT DO NOTHING;
+  RETURN new;
+END;
+$$;
 
-DROP TRIGGER IF EXISTS update_votes_trigger ON votes;
-CREATE TRIGGER update_votes_trigger AFTER UPDATE ON votes FOR EACH ROW EXECUTE PROCEDURE updateVotes();
-*/
+DROP TRIGGER IF EXISTS adding_authors_From_justcreated_thread
+ON threads;
+
+CREATE TRIGGER adding_authors_From_justcreated_thread
+BEFORE INSERT
+  ON threads
+FOR EACH ROW
+EXECUTE PROCEDURE adding_authors_From_justcreated_thread_proc();
+
+--- Для обновления авторов из поста
+
+CREATE OR REPLACE FUNCTION adding_authors_From_justcreated_posts_proc()
+  RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  INSERT INTO forums_users(user_id, nickname, fullname, email, about, forum_id)
+    (SELECT
+       new.author_id,
+       u.nickname,
+       u.fullname,
+       u.email,
+       u.about,
+       new.forum_id
+     FROM users u
+     WHERE u.id = new.author_id)
+  ON CONFLICT DO NOTHING;
+  RETURN new;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS adding_authors_From_justcreated_post
+ON posts;
+
+CREATE TRIGGER adding_authors_From_justcreated_post
+BEFORE INSERT
+  ON posts
+FOR EACH ROW
+EXECUTE PROCEDURE adding_authors_From_justcreated_posts_proc();*/

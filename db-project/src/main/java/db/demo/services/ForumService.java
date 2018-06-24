@@ -8,8 +8,6 @@ import db.demo.views.ForumModel;
 import db.demo.views.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -68,12 +66,12 @@ public class ForumService {
             return jdbcTemplate.queryForObject(
                     "SELECT *" +
                             "FROM forums  f " +
-                            "WHERE f.slug = ?::citext " +
-                            "LIMIT 1;",
+                            "WHERE f.slug = ?::citext; ",
                     forumMapper,
                     slug
             );
         } catch (Exception e) {
+            System.out.println(e);
             return null;
         }
     }
@@ -83,8 +81,7 @@ public class ForumService {
             return jdbcTemplate.queryForObject(
                     "SELECT * " +
                             "FROM forums f " +
-                            "WHERE slug = ?::citext " +
-                            "LIMIT 1;",
+                            "WHERE slug = ?::citext; ",
                     forumDBMapper,
                     slug
             );
@@ -93,7 +90,59 @@ public class ForumService {
         }
     }
 
-    public List<UserModel> getUsersOfForum(int forumId, int limit, String since, boolean desc) {
+    public int getForumIdBySlug(String slug){
+        try {
+            return jdbcTemplate.queryForObject(
+                    "SELECT id " +
+                            "FROM forums f " +
+                            "WHERE slug = ?::citext; ",
+                    Integer.class,
+                    slug
+            );
+        } catch (Exception e){
+            System.out.print(e);
+            return -1;
+        }
+    }
+
+   /* public List<UserModel> getUsersOfForum(int forumId, int limit, String since, boolean desc) {
+
+        String query =
+                "SELECT u.* " +
+                "FROM (SELECT fu.user_id FROM forums_users fu WHERE fu.forum_id = ? GROUP BY fu.user_id ) lu " +
+                "LEFT JOIN users u ON u.id = lu.user_id ";
+
+        ArrayList params = new ArrayList() ;
+        params.add(forumId);
+
+        if (since!= null && !since.isEmpty()) {
+            if (desc) {
+                query += " WHERE u.nickname < ?::citext ";
+            } else {
+                query += " WHERE u.nickname > ?::citext ";
+            }
+            params.add(since);
+        }
+
+        if (desc) {
+            query += " ORDER BY u.nickname DESC ";
+        } else {
+            query += " ORDER BY u.nickname ASC ";
+        }
+
+        if (limit != 0) {
+            query += " LIMIT ?;";
+            params.add(limit);
+        }
+
+        return jdbcTemplate.query(
+                query,
+                params.toArray(),
+                new UserMapper()
+        );
+    }*/
+
+   /* public List<UserModel> getUsersOfForum(int forumId, int limit, String since, boolean desc) {
 
         String query =
                 "SELECT * " +
@@ -104,9 +153,9 @@ public class ForumService {
 
         if (since!= null && !since.isEmpty()) {
             if (desc) {
-                query += " AND nickname < ? ";
+                query += " AND nickname < ?::citext ";
             } else {
-                query += " AND nickname > ? ";
+                query += " AND nickname > ?::citext ";
             }
             params.add(since);
         }
@@ -125,8 +174,45 @@ public class ForumService {
         return jdbcTemplate.query(
                 query,
                 params.toArray(),
-                new UserMapper()
+                userMapper
+        );
+    }*/
+
+    public List<UserModel> getUsersOfForum(int forumId, int limit, String since, boolean desc) {
+
+        String query =
+                "SELECT about, nickname, fullname, email " +
+                        "FROM forums_users " +
+                        "WHERE forum_id=? ";
+        ArrayList params = new ArrayList() ;
+        params.add(forumId);
+
+        if (since!= null && !since.isEmpty()) {
+            if (desc) {
+                query += " AND nickname < ?::citext ";
+            } else {
+                query += " AND nickname > ?::citext ";
+            }
+            params.add(since);
+        }
+
+        if (desc) {
+            query += " ORDER BY nickname DESC ";
+        } else {
+            query += " ORDER BY nickname ASC ";
+        }
+
+        if (limit != 0) {
+            query += " LIMIT ?;";
+            params.add(limit);
+        }
+
+        return jdbcTemplate.query(
+                query,
+                params.toArray(),
+                userMapper
         );
     }
+
 
 }

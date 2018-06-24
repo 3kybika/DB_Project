@@ -33,6 +33,7 @@ public class ThreadService {
     public int getCount() {
         return jdbcTemplate.queryForObject("SELECT COUNT(*) FROM threads", Integer.class);
     }
+
     public Integer createThread(ThreadDBModel thread) {
         int threadId =  jdbcTemplate.queryForObject(
                 "INSERT INTO threads " +
@@ -53,13 +54,17 @@ public class ThreadService {
                 "UPDATE forums SET threads = threads+1 WHERE id = ?;",
                 thread.getForum()
         );
-        jdbcTemplate.update(
-                "INSERT INTO forums_users(user_id, forum_id) " +
-                        "VALUES (?, ?) " +
-                        "ON CONFLICT (forum_id, user_id) DO NOTHING;",
+       /* jdbcTemplate.update(
+                "INSERT INTO forums_users(user_id, forum_id)" +
+                "SELECT ?, ?" +
+                "WHERE NOT EXISTS (" +
+                "SELECT * FROM forums_users WHERE user_id = ? AND forum_id = ?" +
+                ");",
+                thread.getAuthorId(),
+                thread.getForum(),
                 thread.getAuthorId(),
                 thread.getForum()
-        );
+        );*/
 
         return threadId;
     }
@@ -135,12 +140,12 @@ public class ThreadService {
         }
     }
 
-    public List<ThreadModel> getThreadsByForumDB (ForumDBModel forumDB, int limit, String since, boolean desc){
+    public List<ThreadModel> getThreadsByForumId (int forumId, int limit, String since, boolean desc){
         String query = "SELECT *" +
                 "FROM threads t " +
                 "WHERE t.forum_id = ? ";
         ArrayList params = new ArrayList() ;
-        params.add(forumDB.getId());
+        params.add(forumId);
 
         if (since!= null && !since.isEmpty()) {
             if (desc) {

@@ -8,6 +8,8 @@ import db.demo.views.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -15,6 +17,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class UserService {
@@ -126,36 +129,63 @@ public class UserService {
         return getUserByNickname(user.getNickname());
     }
 
-    public void addingForumUsers(List<Integer> ids, int forumId)  throws SQLException {
-       /* String query = "INSERT INTO forums_users(user_id, forum_id) VALUES (?, ?) ON CONFLICT (forum_id, user_id) DO NOTHING; ";
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public void addingForumUser(UserDBModel user, int forumId)  throws SQLException {
+       jdbcTemplate.update(
+                "INSERT INTO forums_users(user_id , email, fullname, nickname , about, forum_id)" +
+                        "SELECT ?, ?, ?, ?, ?, ?" +
+                        "ON CONFLICT (forum_id, user_id) DO NOTHING;",
+            user.getId(),
+            user.getEmail(),
+            user.getFullname(),
+            user.getNickname(),
+            user.getAbout(),
+            forumId
+
+        );
+    }
+   /* @Transactional(isolation = Isolation.READ_COMMITTED)
+    public void addingForumUsers(List<UserDBModel> users, int forumId)  throws SQLException {
+        String query =
+        "INSERT INTO forums_users(user_id , email, fullname, nickname , about, forum_id)" +
+                        "SELECT ?, ?, ?, ?, ?, ?" +
+                        "ON CONFLICT (forum_id, user_id) DO NOTHING;";
         try (
                 Connection con = this.jdbcTemplate.getDataSource().getConnection();
                 PreparedStatement ps = con.prepareStatement(query, Statement.NO_GENERATED_KEYS)
         ) {
-            for (Integer id : ids) {
-                ps.setInt(1, id);
-                ps.setInt(2, forumId);
+            for (UserDBModel user : users) {
+
+
+                ps.setInt(1, user.getId());
+                ps.setString(2, user.getEmail());
+                ps.setString(3, user.getFullname());
+                ps.setString(4, user.getNickname());
+                ps.setString(5, user.getAbout());
+                ps.setInt(6, forumId);
 
                 ps.addBatch();
             }
             ps.executeBatch();
-        } catch (Exception e){
-            System.out.print(e);
-        }*/
-        for (Integer id : ids) {
-            try {
-                jdbcTemplate.update(connection -> {
-                    PreparedStatement ps = connection.prepareStatement(
-                            "INSERT INTO forums_users(user_id, forum_id) VALUES (?, ?) ON CONFLICT (forum_id, user_id) DO NOTHING; ",
-                            PreparedStatement.NO_GENERATED_KEYS
-                    );
-                    ps.setInt(1, id);
-                    ps.setInt(2, forumId);
-                    return ps;
-                });
-            } catch (Exception ex) {
+        } catch(Exception err) {
+            throw err;
+        }
+    }*/
+    public void addingForumUsers(Set<UserDBModel> users, int forumId)  throws SQLException {
+        for (UserDBModel user : users) {
+            jdbcTemplate.update(
+                    "INSERT INTO forums_users(user_id , email, fullname, nickname , about, forum_id)" +
+                            "SELECT ?, ?, ?, ?, ?, ?" +
+                            "ON CONFLICT (forum_id, user_id) DO NOTHING;",
+                    user.getId(),
+                    user.getEmail(),
+                    user.getFullname(),
+                    user.getNickname(),
+                    user.getAbout(),
+                    forumId
 
-            }
+            );
         }
     }
 }

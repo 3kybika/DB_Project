@@ -17,9 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @RequestMapping("/api/thread")
 @RestController
@@ -69,7 +67,8 @@ public class ThreadController {
         int threadId = threadDB.getId();
         String createdNow = new Timestamp(System.currentTimeMillis()).toInstant().toString();
         List<PostDBModel> postsForCreation = new ArrayList<>();
-        List<Integer> usersForUpdating = new ArrayList<>();
+        Set<UserDBModel> usersForUpdating=new LinkedHashSet<>();
+        //List<UserDBModel> usersForUpdating = new ArrayList<>();
         for(PostModel post : posts){
 
             post.setForum(threadDB.getForumSlug());
@@ -105,7 +104,7 @@ public class ThreadController {
                 MessageModel error = new MessageModel("Can't find user with nickname: " + post.getAuthor());
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
             }
-            usersForUpdating.add(author.getId());
+            usersForUpdating.add(author);
 
             postForCreation.setAuthor(author.getId());
             postForCreation.setAuthorNickname(author.getNickname());
@@ -125,7 +124,7 @@ public class ThreadController {
         try {
             userService.addingForumUsers(usersForUpdating , forumId);
         } catch (Exception e) {
-            MessageModel error = new MessageModel("Parent post was created in another thread");
+            MessageModel error = new MessageModel("Could not open database connection!");
             System.out.print(e);
             return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
         }
@@ -176,7 +175,10 @@ public class ThreadController {
 
     @GetMapping(value = "/{slug_or_id}/details")
     public ResponseEntity getThreadDetails(@PathVariable(name = "slug_or_id") String slug_or_id) {
+        long st = System.nanoTime();
         ThreadModel thread = threadService.getThreadBySlugOrId(slug_or_id);
+        System.out.println("getThreadBySlugOrId:" + (System.nanoTime() - st));
+
         if (thread == null) {
             MessageModel error = new MessageModel("Can't find thread with slug or id " + slug_or_id);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
@@ -206,12 +208,18 @@ public class ThreadController {
             @RequestParam(value = "sort", defaultValue = "flat") String sort,
             @RequestParam(value = "desc", defaultValue = "false") boolean desc
     ) {
+        long st = System.nanoTime();
         ThreadModel thread = threadService.getThreadBySlugOrId(slug);
+        System.out.println("getThreadBySlugOrId:" + (System.nanoTime() - st));
+
         if (thread == null) {
             MessageModel error = new MessageModel("Can't find thread " + slug);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
         }
+         st = System.nanoTime();
         List<PostModel> posts = postService.getPosts(thread.getId(), since, desc, sort, limit);
+        System.out.println("getPosts " + since + " " + desc + " " + sort + " " + limit + ":" + (System.nanoTime() - st));
+
         return ResponseEntity.status(HttpStatus.OK).body(posts);
     }
 

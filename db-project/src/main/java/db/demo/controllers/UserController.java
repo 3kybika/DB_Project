@@ -44,7 +44,10 @@ public class UserController {
     public ResponseEntity getProfile(
             @PathVariable(name = "nickname") String nickname
     ) {
+        long st = System.nanoTime();
         UserModel user = userService.getUserByNickname(nickname);
+        System.out.println("getUserByNickname:" + (System.nanoTime() - st));
+
         if (user == null) {
             MessageModel error = new MessageModel("Can't find user with nickname " + nickname);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);

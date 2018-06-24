@@ -44,8 +44,12 @@ public class PostController {
             @PathVariable(name = "id") int id,
             @RequestParam(name = "related", required = false) Set<String> requiredInfo
     ) {
+
         PostFullModel postFull = new PostFullModel();
+
+        long st = System.nanoTime();
         PostDBModel post = postService.getPostDBById(id);
+        System.out.println("getPostDBById:" + (System.nanoTime() - st));
 
         if (post == null) {
             MessageModel error = new MessageModel("Can't find post with id: " + id);
@@ -56,16 +60,22 @@ public class PostController {
 
         if (requiredInfo != null && !requiredInfo.isEmpty()) {
             if (requiredInfo.contains("user")) {
+                st = System.nanoTime();
                 postFull.setAuthor(userService.getUserById(post.getAuthor()));
+                System.out.println("getPostDBById:" + (System.nanoTime() - st));
             }
             if (requiredInfo.contains("forum")) {
+                st = System.nanoTime();
                 postFull.setForum(forumService.getForumById(post.getForum()));
+                System.out.println("getForumById:" + (System.nanoTime() - st));
             }
             if (requiredInfo.contains("thread")) {
+                st = System.nanoTime();
                 postFull.setThread(threadService.getThreadById(post.getThread()));
+                System.out.println("getThreadById:" + (System.nanoTime() - st));
             }
         }
-
+        long end = System.nanoTime();
         return ResponseEntity.status(HttpStatus.OK).body(postFull);
     }
 

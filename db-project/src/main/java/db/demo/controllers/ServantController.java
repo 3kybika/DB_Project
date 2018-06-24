@@ -1,6 +1,7 @@
 package db.demo.controllers;
 
 import db.demo.services.ServantService;
+import db.demo.views.StatusModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +21,11 @@ public class ServantController {
 
     @GetMapping(value = "/status")
     public ResponseEntity getDatabaseStatus() {
-        return ResponseEntity.status(HttpStatus.OK).body(servantService.getStatus());
+        long st = System.nanoTime();
+        StatusModel stat = servantService.getStatus();
+        System.out.println("getStatus:" + (System.nanoTime() - st));
+
+        return ResponseEntity.status(HttpStatus.OK).body(stat);
     }
 
     @PostMapping(value = "/clear")

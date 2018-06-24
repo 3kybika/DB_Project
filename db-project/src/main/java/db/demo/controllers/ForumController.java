@@ -7,10 +7,10 @@ import db.demo.models.UserDBModel;
 import db.demo.services.ForumService;
 import db.demo.services.ThreadService;
 import db.demo.services.UserService;
-import db.demo.utils.TimestampUtil;
 import db.demo.views.ForumModel;
 import db.demo.views.MessageModel;
 import db.demo.views.ThreadModel;
+import db.demo.views.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
@@ -62,7 +62,10 @@ public class ForumController {
 
     @GetMapping(value = "{slug}/details")
     public ResponseEntity getForumDetails(@PathVariable(name = "slug") String slug) {
+        long st = System.nanoTime();
         ForumModel forum = forumService.getForumBySlug(slug);
+        System.out.println("getForumBySlug:" + (System.nanoTime() - st));
+
         if (forum == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageModel("Can't find forum " + slug));
         }
@@ -98,8 +101,11 @@ public class ForumController {
 
         try{
             thread.setId(threadService.createThread(threadDB));
+            userService.addingForumUser(user, forum.getId());
             return ResponseEntity.status(HttpStatus.CREATED).body(thread);
         } catch (DuplicateKeyException ex) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(threadService.getThreadBySlug(thread.getSlug()));
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(threadService.getThreadBySlug(thread.getSlug()));
         }
     }
@@ -111,12 +117,17 @@ public class ForumController {
             @RequestParam(value = "since", defaultValue = "") String since,
             @RequestParam(value = "desc", defaultValue = "false") boolean desc
     ) {
-        ForumDBModel forumDB = forumService.getForumDBBySlug(slug);
-        if( forumDB == null){
+        long st = System.nanoTime();
+        int forumId = forumService.getForumIdBySlug(slug);
+        System.out.println("getForumIdBySlug:" + (System.nanoTime() - st));
+
+        if( forumId == -1){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageModel("Can't find forum by slug: " + slug));
         }
+        st = System.nanoTime();
+        List<ThreadModel> result = threadService.getThreadsByForumId(forumId, limit, since, desc);
+        System.out.println("getThreadsByForumId:" + (System.nanoTime() - st));
 
-        List<ThreadModel> result = threadService.getThreadsByForumDB(forumDB, limit, since, desc);
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
@@ -127,13 +138,19 @@ public class ForumController {
             @RequestParam(value = "since", defaultValue = "") String since,
             @RequestParam(value = "desc", defaultValue = "false") boolean desc
     ) {
-        ForumDBModel forum = forumService.getForumDBBySlug(slug);
-        if (forum == null) {
+        long st = System.nanoTime();
+        int forumId  = forumService.getForumIdBySlug(slug);
+        System.out.println("getForumIdBySlug:" + (System.nanoTime() - st));
+
+        if (forumId == -1) {
             MessageModel error = new MessageModel("Can't find forum " + slug);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
         }
+        st = System.nanoTime();
+        List<UserModel> users = forumService.getUsersOfForum(forumId, limit, since, desc);
+        System.out.println("getUsersOfForum:" + (System.nanoTime() - st));
 
-        return ResponseEntity.status(HttpStatus.OK).body(forumService.getUsersOfForum(forum.getId(), limit, since, desc));
+        return ResponseEntity.status(HttpStatus.OK).body(users);
     }
 
 }
