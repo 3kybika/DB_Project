@@ -71,7 +71,7 @@ public class ForumService {
                     slug
             );
         } catch (Exception e) {
-            System.out.println(e);
+            //System.out.println(e);
             return null;
         }
     }
@@ -100,7 +100,7 @@ public class ForumService {
                     slug
             );
         } catch (Exception e){
-            System.out.print(e);
+            //System.out.print(e);
             return -1;
         }
     }

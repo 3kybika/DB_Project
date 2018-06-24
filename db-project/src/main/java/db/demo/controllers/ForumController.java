@@ -62,9 +62,9 @@ public class ForumController {
 
     @GetMapping(value = "{slug}/details")
     public ResponseEntity getForumDetails(@PathVariable(name = "slug") String slug) {
-        //long st = System.nanoTime();
+        long st = System.nanoTime();
         ForumModel forum = forumService.getForumBySlug(slug);
-        //System.out.println("getForumBySlug:" + (System.nanoTime() - st));
+        System.out.println("getForumBySlug:" + (System.nanoTime() - st));
 
         if (forum == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageModel("Can't find forum " + slug));
@@ -117,16 +117,16 @@ public class ForumController {
             @RequestParam(value = "since", defaultValue = "") String since,
             @RequestParam(value = "desc", defaultValue = "false") boolean desc
     ) {
-        //long st = System.nanoTime();
+        long st = System.nanoTime();
         int forumId = forumService.getForumIdBySlug(slug);
-       // System.out.println("getForumIdBySlug:" + (System.nanoTime() - st));
+        System.out.println("getForumIdBySlug:" + (System.nanoTime() - st));
 
         if( forumId == -1){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageModel("Can't find forum by slug: " + slug));
         }
-       // st = System.nanoTime();
+        st = System.nanoTime();
         List<ThreadModel> result = threadService.getThreadsByForumId(forumId, limit, since, desc);
-        //System.out.println("getThreadsByForumId:" + (System.nanoTime() - st));
+        System.out.println("getThreadsByForumId:" + (System.nanoTime() - st));
 
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
@@ -138,17 +138,17 @@ public class ForumController {
             @RequestParam(value = "since", defaultValue = "") String since,
             @RequestParam(value = "desc", defaultValue = "false") boolean desc
     ) {
-       // long st = System.nanoTime();
+        long st = System.nanoTime();
         int forumId  = forumService.getForumIdBySlug(slug);
-        //System.out.println("getForumIdBySlug:" + (System.nanoTime() - st));
+        System.out.println("getForumIdBySlug:" + (System.nanoTime() - st));
 
         if (forumId == -1) {
             MessageModel error = new MessageModel("Can't find forum " + slug);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
         }
-        //st = System.nanoTime();
+        st = System.nanoTime();
         List<UserModel> users = forumService.getUsersOfForum(forumId, limit, since, desc);
-        //System.out.println("getUsersOfForum:" + (System.nanoTime() - st));
+        System.out.println("getUsersOfForum:" + (System.nanoTime() - st));
 
         return ResponseEntity.status(HttpStatus.OK).body(users);
     }

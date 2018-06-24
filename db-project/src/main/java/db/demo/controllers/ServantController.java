@@ -21,9 +21,9 @@ public class ServantController {
 
     @GetMapping(value = "/status")
     public ResponseEntity getDatabaseStatus() {
-        //long st = System.nanoTime();
+        long st = System.nanoTime();
         StatusModel stat = servantService.getStatus();
-        //System.out.println("getStatus:" + (System.nanoTime() - st));
+        System.out.println("getStatus:" + (System.nanoTime() - st));
 
         return ResponseEntity.status(HttpStatus.OK).body(stat);
     }

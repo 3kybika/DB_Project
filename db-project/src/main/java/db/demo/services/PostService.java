@@ -275,6 +275,81 @@ public class PostService {
 
     public List<PostModel>  getPostsInParentTreeSort(int threadId, int since, boolean desc, int limit) {
         ArrayList<Object> params = new ArrayList<>();
+        String query = "";
+
+        if (since != -1){
+            query = "SELECT r.* "+
+            "FROM (SELECT root_post FROM posts WHERE id = ? LIMIT 1) rp "+
+            "INNER JOIN LATERAL ( "+
+                    "SELECT p.id "+
+                    "FROM posts p "+
+                    "WHERE p.parent = 0 "+
+                    "AND p.thread_id = ?  "+
+                    "AND p.id ";
+            params.add(since);
+            params.add(threadId);
+
+            if (desc) {
+                query += " < rp.root_post ";
+            } else {
+                query += " > rp.root_post ";
+            }
+            query += " ORDER BY p.id ";
+            if (desc) {
+                query += " DESC ";
+            }
+
+            if (limit != 0) {
+                query += " LIMIT ? ";
+                params.add(limit);
+            }
+            query += ") rps ON TRUE " +
+                    "INNER JOIN posts r ON r.root_post = rps.id " +
+                    "ORDER BY  " ;
+            if (desc) {
+                query += " r.root_post DESC, ";
+            }
+            query += "r.path;";
+
+        } else {
+            query =
+                    "SELECT r.* " +
+                            "FROM " +
+                            "( " +
+                            "SELECT DISTINCT p.id " +
+                            "FROM posts p " +
+                            "WHERE p.parent = 0 " +
+                            "AND p.thread_id = ? " +
+                            "ORDER BY p.id ";
+            params.add(threadId);
+            if (desc) {
+                query += " DESC ";
+            }
+
+            if (limit != 0) {
+                query += " LIMIT ? ";
+                params.add(limit);
+            }
+
+            query += ") rps " +
+                    "INNER JOIN posts r ON r.root_post = rps.id " +
+                    "ORDER BY   ";
+
+            if (desc) {
+                query += " r.root_post DESC, ";
+            }
+            query += "r.path;";
+        }
+
+        return jdbcTemplate.query(
+                query,
+                params.toArray(),
+                postMapper
+        );
+    }
+
+    /*public List<PostModel>  getPostsInParentTreeSort(int threadId, int since, boolean desc, int limit) {
+        ArrayList<Object> params = new ArrayList<>();
         String query = "WITH root_list as ( " +
                 " SELECT DISTINCT id FROM posts " +
                 "WHERE " +
@@ -319,7 +394,7 @@ public class PostService {
                 params.toArray(),
                 postMapper
         );
-    }
+    }*/
 
     /*public List<PostModel>  getPostsInParentTreeSort(int threadId, int since, boolean desc, int limit) {
 

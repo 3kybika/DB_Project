@@ -175,9 +175,9 @@ public class ThreadController {
 
     @GetMapping(value = "/{slug_or_id}/details")
     public ResponseEntity getThreadDetails(@PathVariable(name = "slug_or_id") String slug_or_id) {
-        //long st = System.nanoTime();
+        long st = System.nanoTime();
         ThreadModel thread = threadService.getThreadBySlugOrId(slug_or_id);
-        // System.out.println("getThreadBySlugOrId:" + (System.nanoTime() - st));
+         System.out.println("getThreadBySlugOrId:" + (System.nanoTime() - st));
 
         if (thread == null) {
             MessageModel error = new MessageModel("Can't find thread with slug or id " + slug_or_id);
@@ -208,17 +208,17 @@ public class ThreadController {
             @RequestParam(value = "sort", defaultValue = "flat") String sort,
             @RequestParam(value = "desc", defaultValue = "false") boolean desc
     ) {
-        //long st = System.nanoTime();
+        long st = System.nanoTime();
         ThreadModel thread = threadService.getThreadBySlugOrId(slug);
-        //System.out.println("getThreadBySlugOrId:" + (System.nanoTime() - st));
+        System.out.println("getThreadBySlugOrId:" + (System.nanoTime() - st));
 
         if (thread == null) {
             MessageModel error = new MessageModel("Can't find thread " + slug);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
         }
-        //st = System.nanoTime();
+        st = System.nanoTime();
         List<PostModel> posts = postService.getPosts(thread.getId(), since, desc, sort, limit);
-        //System.out.println("getPosts " + since + " " + desc + " " + sort + " " + limit + ":" + (System.nanoTime() - st));
+        System.out.println("getPosts " + since + " " + desc + " " + sort + " " + limit + ":" + (System.nanoTime() - st));
 
         return ResponseEntity.status(HttpStatus.OK).body(posts);
     }

@@ -47,9 +47,9 @@ public class PostController {
 
         PostFullModel postFull = new PostFullModel();
 
-        //long st = System.nanoTime();
+        long st = System.nanoTime();
         PostDBModel post = postService.getPostDBById(id);
-        //System.out.println("getPostDBById:" + (System.nanoTime() - st));
+        System.out.println("getPostDBById:" + (System.nanoTime() - st));
 
         if (post == null) {
             MessageModel error = new MessageModel("Can't find post with id: " + id);
@@ -60,19 +60,19 @@ public class PostController {
 
         if (requiredInfo != null && !requiredInfo.isEmpty()) {
             if (requiredInfo.contains("user")) {
-               // st = System.nanoTime();
+                st = System.nanoTime();
                 postFull.setAuthor(userService.getUserById(post.getAuthor()));
-                //System.out.println("getPostDBById:" + (System.nanoTime() - st));
+                System.out.println("getPostDBById:" + (System.nanoTime() - st));
             }
             if (requiredInfo.contains("forum")) {
-                //st = System.nanoTime();
+                st = System.nanoTime();
                 postFull.setForum(forumService.getForumById(post.getForum()));
-               // System.out.println("getForumById:" + (System.nanoTime() - st));
+                System.out.println("getForumById:" + (System.nanoTime() - st));
             }
             if (requiredInfo.contains("thread")) {
-              //  st = System.nanoTime();
+                st = System.nanoTime();
                 postFull.setThread(threadService.getThreadById(post.getThread()));
-              //  System.out.println("getThreadById:" + (System.nanoTime() - st));
+                System.out.println("getThreadById:" + (System.nanoTime() - st));
             }
         }
         long end = System.nanoTime();
