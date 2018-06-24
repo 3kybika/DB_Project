@@ -17,6 +17,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -277,14 +278,14 @@ public class PostService {
         ArrayList<Object> params = new ArrayList<>();
         String query = "";
 
-        if (since != -1){
-            query = "SELECT rr.* "+
-            "FROM (SELECT root_post FROM posts WHERE id = ? LIMIT 1) rp "+
-            "INNER JOIN LATERAL ( "+
-                    "SELECT p.id "+
-                    "FROM posts p "+
-                    "WHERE p.parent = 0 "+
-                    "AND p.thread_id = ?  "+
+        if (since != -1) {
+            query = "SELECT rr.* " +
+                    "FROM (SELECT root_post FROM posts WHERE id = ? LIMIT 1) rp " +
+                    "INNER JOIN LATERAL ( " +
+                    "SELECT p.id " +
+                    "FROM posts p " +
+                    "WHERE p.parent = 0 " +
+                    "AND p.thread_id = ?  " +
                     "AND p.id ";
             params.add(since);
             params.add(threadId);
@@ -305,11 +306,13 @@ public class PostService {
             }
             query += ") rps ON TRUE " +
                     "LEFT JOIN lateral ( SELECT r.* FROM posts r WHERE r.root_post = rps.id) rr ON TRUE " +
-                    "ORDER BY  " ;
-            if (desc) {
+                    // "ORDER BY   ";
+                    ";";
+
+          /*  if (desc) {
                 query += " rr.root_post DESC, ";
             }
-            query += "rr.path;";
+            query += "rr.path;";*/
 
         } else {
             query =
@@ -333,20 +336,85 @@ public class PostService {
 
             query += ") rps " +
                     "LEFT JOIN lateral ( SELECT r.* FROM posts r WHERE r.root_post = rps.id) rr ON TRUE " +
-                    "ORDER BY   ";
+                    // "ORDER BY   ";
+                    ";";
 
-            if (desc) {
+          /*  if (desc) {
                 query += " rr.root_post DESC, ";
             }
-            query += "rr.path;";
+            query += "rr.path;";*/
         }
 
-        return jdbcTemplate.query(
+        List<PostDBModel> posts = jdbcTemplate.query(
                 query,
                 params.toArray(),
-                postMapper
+                postDBMapper
         );
+
+        Comparator<PostDBModel> pcomp;
+        if (desc) {
+            pcomp = new PostModelRootPostAndPathComparator();
+        } else {
+            pcomp = new PostModelPathComparator();
+        }
+        posts.sort(pcomp);
+
+        ArrayList<PostModel> result = new ArrayList<>();
+        for(PostDBModel post : posts){
+            result.add(new PostModel(post));
+        }
+        return result;
     }
+
+    class PostModelRootPostAndPathComparator implements Comparator<PostDBModel> {
+        public int compare(PostDBModel a, PostDBModel b){
+            if( a.getRootPost() > b.getRootPost() ){
+                return -1;
+            }
+            if ( a.getRootPost() < b.getRootPost()){
+                return 1;
+            }
+
+            int i = 0;
+            while(i < a.getPath().length && i < b.getPath().length && (int) a.getPath()[i] == (int) b.getPath()[i]){
+                i++;
+            }
+            if( i>= b.getPath().length &&  i < a.getPath().length){
+                return 1;
+            }
+            if( i>= a.getPath().length &&  i < b.getPath().length){
+                return -1;
+            }
+
+            if( (int) a.getPath()[i] > (int) b.getPath()[i]){
+                return 1;
+            }
+            return -1;
+        }
+    }
+
+    class PostModelPathComparator implements Comparator<PostDBModel> {
+
+        public int compare(PostDBModel a, PostDBModel b){
+            int i = 0;
+            while( i < a.getPath().length && i < b.getPath().length && (int) a.getPath()[i] == (int) b.getPath()[i]){
+                i++;
+            }
+
+            if( i>= b.getPath().length &&  i < a.getPath().length){
+                return 1;
+            }
+            if( i>= a.getPath().length &&  i < b.getPath().length){
+                return -1;
+            }
+
+            if( (int) a.getPath()[i] > (int) b.getPath()[i]){
+                return 1;
+            }
+            return -1;
+        }
+    }
+
 
     /*public List<PostModel>  getPostsInParentTreeSort(int threadId, int since, boolean desc, int limit) {
         ArrayList<Object> params = new ArrayList<>();
