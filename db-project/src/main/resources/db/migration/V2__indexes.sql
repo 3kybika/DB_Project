@@ -28,8 +28,8 @@ DROP INDEX IF EXISTS  posts_on_thread_id_created_id;
 CREATE INDEX posts_on_thread_id_created_id ON posts(thread_id, created, id);
 
 DROP INDEX IF EXISTS  posts_of_thread_id_parent_id_idx;
-CREATE INDEX posts_of_thread_id_parent_id_idx ON posts(thread_id, parent, id);
-
+CREATE INDEX posts_of_thread_id_parent_id_idx ON posts(thread_id, parent, id)
+WHERE parent = 0;
 
 --forums:
 DROP INDEX IF EXISTS  forums_slug_id_idx;
