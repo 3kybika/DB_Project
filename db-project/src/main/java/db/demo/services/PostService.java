@@ -278,7 +278,7 @@ public class PostService {
         String query = "";
 
         if (since != -1){
-            query = "SELECT r.* "+
+            query = "SELECT rr.* "+
             "FROM (SELECT root_post FROM posts WHERE id = ? LIMIT 1) rp "+
             "INNER JOIN LATERAL ( "+
                     "SELECT p.id "+
@@ -304,19 +304,19 @@ public class PostService {
                 params.add(limit);
             }
             query += ") rps ON TRUE " +
-                    "INNER JOIN posts r ON r.root_post = rps.id " +
+                    "LEFT JOIN lateral ( SELECT r.* FROM posts r WHERE r.root_post = rps.id) rr ON TRUE " +
                     "ORDER BY  " ;
             if (desc) {
-                query += " r.root_post DESC, ";
+                query += " rr.root_post DESC, ";
             }
-            query += "r.path;";
+            query += "rr.path;";
 
         } else {
             query =
-                    "SELECT r.* " +
+                    "SELECT rr.* " +
                             "FROM " +
                             "( " +
-                            "SELECT DISTINCT p.id " +
+                            "SELECT     p.id " +
                             "FROM posts p " +
                             "WHERE p.parent = 0 " +
                             "AND p.thread_id = ? " +
@@ -332,13 +332,13 @@ public class PostService {
             }
 
             query += ") rps " +
-                    "INNER JOIN posts r ON r.root_post = rps.id " +
+                    "LEFT JOIN lateral ( SELECT r.* FROM posts r WHERE r.root_post = rps.id) rr ON TRUE " +
                     "ORDER BY   ";
 
             if (desc) {
-                query += " r.root_post DESC, ";
+                query += " rr.root_post DESC, ";
             }
-            query += "r.path;";
+            query += "rr.path;";
         }
 
         return jdbcTemplate.query(
