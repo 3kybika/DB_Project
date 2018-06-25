@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
+import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
@@ -21,8 +22,8 @@ import java.util.Comparator;
 import java.util.List;
 
 @Service
+@Repository
 public class PostService {
-
     private JdbcTemplate jdbcTemplate;
     private PostDBMapper postDBMapper = new PostDBMapper();
     private PostMapper postMapper = new PostMapper();
@@ -39,6 +40,7 @@ public class PostService {
     public int getCount() {
         return jdbcTemplate.queryForObject("SELECT COUNT(*) FROM posts", Integer.class);
     }
+
     public PostModel getPostById(int id){
         try {
             return jdbcTemplate.queryForObject(

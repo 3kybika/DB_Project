@@ -2,9 +2,11 @@ package db.demo.services;
 
 import db.demo.views.StatusModel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 @Service
+@Repository
 public class ServantService {
     private ForumService forumService;
     private PostService postService;

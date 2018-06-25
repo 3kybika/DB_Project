@@ -8,12 +8,14 @@ import db.demo.views.ForumModel;
 import db.demo.views.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Repository
 public class ForumService {
 
     private JdbcTemplate jdbcTemplate;

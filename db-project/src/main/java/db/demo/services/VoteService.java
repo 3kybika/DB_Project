@@ -7,9 +7,11 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 @Service
+@Repository
 public class VoteService {
 
     private JdbcTemplate jdbcTemplate;
