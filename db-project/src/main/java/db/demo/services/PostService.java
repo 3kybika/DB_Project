@@ -243,7 +243,16 @@ public class PostService {
         }
 
         if (since != -1) {
-            query += "AND path " + compare + " ( SELECT path FROM posts WHERE id= ? )";
+            /*Object unparceredPath = jdbcTemplate.queryForObject(
+                    "SELECT path FROM posts WHERE id = ? ",
+                    Object.class,
+                    since
+            );
+
+
+           / query += "AND path " + compare +" '"+ unparceredPath.toString()+ "' ";*/
+
+             query += "AND path " + compare +"(SELECT path FROM posts WHERE id = ?) ";
             params.add(since);
         }
 
@@ -533,7 +542,7 @@ public class PostService {
         if (desc) {
             query += " p.root_post DESC, ";
         }
-        query += " p.path;";
+            query += " p.path;";
 
         return jdbcTemplate.query(
                 query,

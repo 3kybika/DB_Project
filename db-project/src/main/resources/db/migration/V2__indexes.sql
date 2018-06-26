@@ -20,18 +20,12 @@ CREATE INDEX posts_id_idx ON posts (id);
 DROP INDEX IF EXISTS  posts_of_root_post_path_idx;
 CREATE INDEX posts_of_root_post_path_idx ON posts(root_post, path);
 
-DROP INDEX IF EXISTS  posts_on_thread_id_path;
-CREATE INDEX posts_on_thread_id_path ON posts(thread_id, path);
-
 DROP INDEX IF EXISTS  posts_on_thread_id_created_id;
 CREATE INDEX posts_on_thread_id_created_id ON posts(thread_id, created, id);
 
-DROP INDEX IF EXISTS  posts_of_thread_id_parent_id_idx;
-CREATE INDEX posts_of_thread_id_parent_id_idx ON posts(thread_id, parent, id)
+DROP INDEX IF EXISTS posts_of_thread_id_id_idx;
+CREATE INDEX posts_of_thread_id_id_idx ON posts(thread_id, id)
 WHERE parent = 0;
-
-DROP INDEX IF EXISTS  posts_of_thread_id_parent_path_id_idx;
-CREATE INDEX posts_of_thread_id_parent_path_id_idx ON posts (thread_id, parent, path, id);
 
 --forums:
 DROP INDEX IF EXISTS  forums_slug_id_idx;

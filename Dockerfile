@@ -8,8 +8,7 @@ RUN apt-get -y update
 #
 # Установка postgresql
 #
-ENV PG_MAJOR 9.6
-ENV PGVER 9.6.9-2.pgdg90+1
+ENV PGVER 9.5
 RUN apt-get update
 RUN apt-get install -y postgresql-$PGVER
 
