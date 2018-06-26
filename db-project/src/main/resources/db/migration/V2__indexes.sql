@@ -27,9 +27,6 @@ DROP INDEX IF EXISTS posts_of_thread_id_id_idx;
 CREATE INDEX posts_of_thread_id_id_idx ON posts(thread_id, id)
 WHERE parent = 0;
 
-DROP INDEX IF EXISTS  posts_on_thread_id_path;
-CREATE INDEX posts_on_thread_id_path ON posts(thread_id, path);
-
 --forums:
 DROP INDEX IF EXISTS  forums_slug_id_idx;
 CREATE UNIQUE INDEX forums_slug_id_idx ON forums (slug, id);
