@@ -14,7 +14,6 @@ DROP INDEX IF EXISTS  forums_users_of_forum_id_nickname_idx;
 CREATE INDEX IF NOT EXISTS forums_users_of_forum_id_nickname_idx ON forums_users(forum_id, nickname);
 
 -- posts:
-
 DROP INDEX IF EXISTS  posts_id_idx;
 CREATE INDEX posts_id_idx ON posts (id);
 
@@ -30,6 +29,9 @@ CREATE INDEX posts_on_thread_id_created_id ON posts(thread_id, created, id);
 DROP INDEX IF EXISTS  posts_of_thread_id_parent_id_idx;
 CREATE INDEX posts_of_thread_id_parent_id_idx ON posts(thread_id, parent, id)
 WHERE parent = 0;
+
+DROP INDEX IF EXISTS  posts_of_thread_id_parent_path_id_idx;
+CREATE INDEX posts_of_thread_id_parent_path_id_idx ON posts (thread_id, parent, path, id);
 
 --forums:
 DROP INDEX IF EXISTS  forums_slug_id_idx;

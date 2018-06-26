@@ -34,8 +34,8 @@ public class PostDBModel {
             @JsonProperty("message")    String  message,
             @JsonProperty("parent")     int     parent,
             @JsonProperty("thread_id")  int     thread_id,
-            @JsonProperty("path")  Object []    path,
-            @JsonProperty("root_post")  int     root_post
+            @JsonProperty("root_post")  Object []    path,
+            @JsonProperty("path")       int     root_post
     ) {
         this.author_id = author_id;
         this.created = created;

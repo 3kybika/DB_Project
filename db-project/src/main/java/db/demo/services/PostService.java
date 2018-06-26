@@ -231,6 +231,41 @@ public class PostService {
     }
 
     public List<PostModel> getPostsInTreeSort(int threadId, int since, boolean desc, int limit) {
+        String query = "SELECT * FROM posts WHERE thread_id = ? ";
+        ArrayList params = new ArrayList();
+        params.add(threadId);
+
+        String compare;
+        if (desc == true) {
+            compare = " < ";
+        } else {
+            compare = " > ";
+        }
+
+        if (since != -1) {
+            query += "AND path " + compare + " ( SELECT path FROM posts WHERE id= ? )";
+            params.add(since);
+        }
+
+        query += "ORDER BY path ";
+        if(desc) {
+            query += " DESC ";
+        }
+
+
+        if (limit != 0) {
+            query += "LIMIT ? ";
+            params.add(limit);
+        }
+
+        return jdbcTemplate.query(
+                query,
+                params.toArray(),
+                postMapper
+        );
+    }
+
+    /*public List<PostModel> getPostsInTreeSort(int threadId, int since, boolean desc, int limit) {
         String query = "";
         ArrayList params = new ArrayList();
 
@@ -274,9 +309,50 @@ public class PostService {
                 params.toArray(),
                 postMapper
         );
-    }
+    }*
 
-    public List<PostModel>  getPostsInParentTreeSort(int threadId, int since, boolean desc, int limit) {
+   /* public List<PostModel>  getPostsInParentTreeSort(int threadId, int since, boolean desc, int limit) {
+        ArrayList params = new ArrayList();
+        String query = "SELECT * FROM posts " +
+                "WHERE thread_id= ? " +
+                " AND root_post IN (SELECT DISTINCT root_post FROM posts ";
+        params.add(threadId);
+
+        String compar = " > ";
+        if (desc){
+            compar = " < ";
+        }
+
+        query += "WHERE thread_id = ? ";
+        params.add(threadId);
+
+        if (since != -1) {
+            query += " AND root_post " + compar + " (SELECT root_post FROM posts WHERE id= ? )";
+            params.add(since);
+        } else {
+
+        }
+
+        if (limit != -1){
+            query += " LIMIT ? ";
+            params.add(limit);
+        }
+        query += ") ORDER BY root_post ";
+
+        if (desc) {
+            query += " DESC ";
+        }
+
+        query += ", path;";
+
+        return jdbcTemplate.query(
+                query,
+                params.toArray(),
+                postMapper
+        );
+    }*/
+
+    /*public List<PostModel>  getPostsInParentTreeSort(int threadId, int since, boolean desc, int limit) {
         ArrayList<Object> params = new ArrayList<>();
         String query = "";
 
@@ -314,7 +390,7 @@ public class PostService {
           /*  if (desc) {
                 query += " rr.root_post DESC, ";
             }
-            query += "rr.path;";*/
+            query += "rr.path;";
 
         } else {
             query =
@@ -344,7 +420,7 @@ public class PostService {
           /*  if (desc) {
                 query += " rr.root_post DESC, ";
             }
-            query += "rr.path;";*/
+            query += "rr.path;";
         }
 
         List<PostDBModel> posts = jdbcTemplate.query(
@@ -415,13 +491,13 @@ public class PostService {
             }
             return -1;
         }
-    }
+    }*/
 
 
-    /*public List<PostModel>  getPostsInParentTreeSort(int threadId, int since, boolean desc, int limit) {
+    public List<PostModel>  getPostsInParentTreeSort(int threadId, int since, boolean desc, int limit) {
         ArrayList<Object> params = new ArrayList<>();
         String query = "WITH root_list as ( " +
-                " SELECT DISTINCT id FROM posts " +
+                " SELECT id FROM posts " +
                 "WHERE " +
                 "parent = 0 " +
                 "AND thread_id = ? ";
@@ -464,7 +540,7 @@ public class PostService {
                 params.toArray(),
                 postMapper
         );
-    }*/
+    }
 
     /*public List<PostModel>  getPostsInParentTreeSort(int threadId, int since, boolean desc, int limit) {
 
